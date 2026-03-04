@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UP Hospital Inventory | ระบบจัดการเวชภัณฑ์ รพ.มพ.</title>
+    <title>UP Hospital Inventory | ระบบจัดการเวชภัณฑ์</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700;800&display=swap');
@@ -14,136 +14,123 @@
         .text-up-gold { color: var(--up-gold); }
         
         @media (max-width: 1024px) {
-            nav { position: fixed; left: -100%; z-index: 1000; transition: 0.4s; }
+            nav { position: fixed; left: -100%; z-index: 1000; transition: 0.4s; height: 100vh; }
             nav.active { left: 0; }
             .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; backdrop-filter: blur(4px); }
             .overlay.active { display: block; }
         }
 
-        .med-card { background: white; border-radius: 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); transition: all 0.3s; }
-        .up-progress-bg { height: 10px; background: #E2E8F0; border-radius: 10px; overflow: hidden; }
-        .up-progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--up-purple), #8B5CF6); transition: width 1s; }
-        .bg-done { background: linear-gradient(90deg, #10B981, #34D399) !important; }
-        .status-pill { padding: 6px 14px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; white-space: nowrap; }
+        .med-card { background: white; border-radius: 2rem; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); transition: all 0.3s; border: 1px solid #F1F5F9; position: relative; overflow: hidden; }
+        .med-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-color: var(--up-purple); }
+        .status-pill { padding: 4px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; display: inline-flex; align-items: center; }
         .hidden-page { display: none; }
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .tab-active { background: var(--up-purple); color: white; box-shadow: 0 8px 15px rgba(96, 45, 145, 0.2); }
         .tab-inactive { background: white; color: #64748B; border: 1px solid #E2E8F0; }
+        .stat-btn { transition: all 0.2s; cursor: pointer; }
+        .stat-btn:active { transform: scale(0.95); }
+        .animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
 </head>
 <body class="flex min-h-screen flex-col lg:flex-row">
 
-    <div id="toast" class="fixed bottom-10 right-5 left-5 lg:left-auto lg:right-10 z-[2000] hidden bg-slate-900 text-white px-8 py-5 rounded-[2rem] shadow-2xl items-center border border-white/10 justify-center">
-        <span id="toast-icon" class="mr-3 text-xl">✅</span>
-        <span id="toast-msg" class="font-bold text-sm">ดำเนินการสำเร็จ</span>
-    </div>
-
-    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-    <header class="lg:hidden bg-up-purple text-white p-4 flex justify-between items-center sticky top-0 z-[800] shadow-lg">
-        <div class="flex items-center gap-3">
-            <div class="bg-white p-1 rounded-lg"><img src="images.png" class="w-7 h-7 object-contain"></div>
-            <span class="font-black text-sm tracking-wider uppercase">UP Hospital</span>
-        </div>
-        <button onclick="toggleMenu()" class="text-2xl p-2">☰</button>
-    </header>
+    <div class="overlay" id="overlay" onclick="window.toggleMenu()"></div>
 
     <nav id="sidebar" class="w-72 bg-up-purple text-white h-screen flex flex-col shadow-2xl shrink-0">
         <div class="p-10 text-center border-b border-white/10 hidden lg:block">
             <div class="w-28 h-28 bg-white rounded-[2.5rem] mx-auto mb-6 flex items-center justify-center shadow-2xl border-b-8 border-up-gold overflow-hidden">
                 <img src="images.png" alt="UP Logo" class="w-20 h-20 object-contain">
             </div>
-            <h1 class="text-2xl font-black tracking-tight">UP HOSPITAL</h1>
-            <p class="text-[11px] text-up-gold font-black uppercase tracking-[0.2em] mt-1">คลังเวชภัณฑ์กลาง</p>
+            <h1 class="text-2xl font-black tracking-tight leading-none">UP HOSPITAL</h1>
+            <p class="text-[11px] text-up-gold font-black uppercase tracking-[0.2em] mt-2">Inventory System</p>
         </div>
         <div class="p-6 space-y-3 flex-1">
-            <button onclick="changePage('db')" id="btn-db" class="w-full flex items-center p-4 rounded-2xl bg-white/20 font-bold transition-all">
+            <button onclick="window.changePage('db')" id="btn-db" class="w-full flex items-center p-4 rounded-2xl bg-white/20 font-bold transition-all">
                 <span class="mr-4 text-xl">🏥</span> Dashboard
             </button>
-            <button onclick="changePage('in')" id="btn-in" class="w-full flex items-center p-4 rounded-2xl hover:bg-white/10 transition-all opacity-60 font-bold">
+            <button onclick="window.changePage('in')" id="btn-in" class="w-full flex items-center p-4 rounded-2xl hover:bg-white/10 transition-all opacity-60 font-bold">
                 <span class="mr-4 text-xl">📦</span> จัดการสต็อก
+            </button>
+            <button onclick="window.goToFilter('expired')" id="btn-exp" class="w-full flex items-center p-4 rounded-2xl hover:bg-white/10 transition-all opacity-60 font-bold text-red-300">
+                <span class="mr-4 text-xl">⏰</span> รายการยาหมดอายุ
             </button>
         </div>
     </nav>
 
     <main class="flex-1 p-4 lg:p-12 overflow-x-hidden">
+        <header class="lg:hidden mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm">
+            <span class="font-black text-up-purple uppercase">UP Hospital</span>
+            <button onclick="window.toggleMenu()" class="text-2xl text-up-purple">☰</button>
+        </header>
+
         <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
             <div class="relative w-full max-w-md">
-                <input type="text" id="search" onkeyup="render()" placeholder="ค้นหาเวชภัณฑ์..." class="w-full pl-12 pr-6 py-4 rounded-[1.5rem] border-none shadow-sm focus:ring-4 focus:ring-purple-100 outline-none transition-all bg-white">
+                <input type="text" id="search" onkeyup="window.render()" placeholder="ค้นหาเวชภัณฑ์..." class="w-full pl-12 pr-6 py-4 rounded-[1.5rem] border-none shadow-sm focus:ring-4 focus:ring-purple-100 outline-none bg-white font-bold">
                 <span class="absolute left-4 top-4 text-xl opacity-30">🔍</span>
             </div>
-            <button onclick="openModal()" class="w-full md:w-auto bg-up-purple text-white px-8 py-4 rounded-[1.5rem] font-extrabold shadow-lg hover:scale-105 active:scale-95 transition-all">
+            <button onclick="window.openModal()" class="w-full md:w-auto bg-up-purple text-white px-8 py-4 rounded-[1.5rem] font-extrabold shadow-lg hover:scale-105 active:scale-95 transition-all">
                 + เพิ่มรายการใหม่
             </button>
         </div>
 
         <div id="page-db" class="fade-in space-y-6">
             <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                <div onclick="changePage('in'); setFilter('all')" class="bg-white p-4 rounded-[1.5rem] shadow-sm border-b-4 border-up-purple text-center cursor-pointer hover:bg-purple-50 transition-all">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">รวมรายการ</p>
-                    <h2 id="stat-total" class="text-3xl font-black text-slate-800">0</h2>
+                <div onclick="window.goToFilter('all')" class="stat-btn bg-white p-6 rounded-[2rem] shadow-sm border-b-4 border-up-purple">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">รวมทั้งหมด</p>
+                    <h2 id="stat-total" class="text-4xl font-black text-slate-800">0</h2>
                 </div>
-                <div onclick="changePage('in'); setFilter('plan')" class="bg-white p-4 rounded-[1.5rem] shadow-sm border-b-4 border-blue-400 text-center cursor-pointer hover:bg-blue-50 transition-all">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">แผนจัดซื้อ</p>
-                    <h2 id="stat-plan" class="text-3xl font-black text-blue-500">0</h2>
+                <div onclick="window.goToFilter('today')" class="stat-btn bg-purple-100 p-6 rounded-[2rem] shadow-sm border-b-4 border-up-purple">
+                    <p class="text-[10px] font-black text-up-purple uppercase tracking-widest mb-1">รับเข้าวันนี้</p>
+                    <h2 id="stat-today" class="text-4xl font-black text-up-purple">0</h2>
                 </div>
-                <div onclick="changePage('in'); setFilter('wait')" class="bg-white p-4 rounded-[1.5rem] shadow-sm border-b-4 border-up-gold text-center cursor-pointer hover:bg-yellow-50 transition-all">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">รอตรวจรับ</p>
-                    <h2 id="stat-wait" class="text-3xl font-black text-up-gold">0</h2>
+                <div onclick="window.goToFilter('low')" class="stat-btn bg-white p-6 rounded-[2rem] shadow-sm border-b-4 border-orange-500">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">ควรเติมสต็อก</p>
+                    <h2 id="stat-warning" class="text-4xl font-black text-orange-600">0</h2>
                 </div>
-                <div onclick="changePage('in'); setFilter('done')" class="bg-white p-4 rounded-[1.5rem] shadow-sm border-b-4 border-emerald-500 text-center cursor-pointer hover:bg-emerald-50 transition-all">
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">เข้าคลัง</p>
-                    <h2 id="stat-done" class="text-3xl font-black text-emerald-500">0</h2>
+                <div onclick="window.goToFilter('done')" class="stat-btn bg-white p-6 rounded-[2rem] shadow-sm border-b-4 border-emerald-500">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">สถานะปกติ</p>
+                    <h2 id="stat-done" class="text-4xl font-black text-emerald-500">0</h2>
                 </div>
-                <div onclick="changePage('in'); setFilter('low')" class="bg-red-50 p-4 rounded-[1.5rem] shadow-sm border-b-4 border-red-500 text-center cursor-pointer hover:bg-red-100 transition-all col-span-2 lg:col-span-1">
-                    <p class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">ยอดยาใกล้หมด</p>
-                    <h2 class="text-3xl font-black text-red-600">⚠️</h2> 
+                <div onclick="window.goToFilter('expired')" class="stat-btn bg-red-50 p-6 rounded-[2rem] shadow-sm border-b-4 border-red-500">
+                    <p class="text-[10px] font-black text-red-400 uppercase tracking-widest mb-1">หมดอายุ / ใกล้หมด</p>
+                    <h2 id="stat-expired" class="text-4xl font-black text-red-600">0</h2>
                 </div>
             </div>
-
-            <div class="bg-white p-6 lg:p-10 rounded-[2.5rem] shadow-sm border border-slate-100">
-                <h3 class="text-xl font-black mb-6 flex items-center">
-                    <span class="w-1.5 h-6 bg-up-purple rounded-full mr-3"></span> รายการรับเข้าคลังวันนี้
-                </h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full min-w-[700px]">
-                        <thead class="text-left text-[10px] font-black text-slate-400 uppercase border-b border-slate-50">
-                            <tr>
-                                <th class="pb-4 px-2">รายการเวชภัณฑ์</th>
-                                <th class="pb-4">ความคืบหน้า</th>
-                                <th class="pb-4">สถานะ</th>
-                                <th class="pb-4">คงเหลือ</th>
-                                <th class="pb-4 text-right pr-4">สถานะรับเข้า</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-db" class="divide-y divide-slate-50"></tbody>
-                    </table>
+            
+            <div class="bg-purple-50 p-8 rounded-[2.5rem] border border-purple-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-xl font-black text-up-purple">ระบบเชื่อมต่อสำเร็จ ✅</h3>
+                    <p class="text-slate-500 font-medium">ข้อมูลกำลังดึงจาก Google Sheets และ Firebase Real-time</p>
                 </div>
+                <span class="text-5xl hidden md:block">📦</span>
             </div>
         </div>
 
         <div id="page-in" class="hidden-page fade-in">
             <div class="flex flex-wrap gap-2 mb-8 bg-slate-200/50 p-1.5 rounded-[1.5rem] w-full lg:w-fit">
-                <button onclick="setFilter('all')" id="tab-all" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-active">ทั้งหมด</button>
-                <button onclick="setFilter('plan')" id="tab-plan" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">แผนจัดซื้อ 📋</button>
-                <button onclick="setFilter('wait')" id="tab-wait" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">รอตรวจรับ ⏳</button>
-                <button onclick="setFilter('low')" id="tab-low" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">ใกล้หมด ⚠️</button>
-                <button onclick="setFilter('done')" id="tab-done" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">เข้าคลังแล้ว ✨</button>
+                <button onclick="window.setFilter('all')" id="tab-all" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-active">ทั้งหมด</button>
+                <button onclick="window.setFilter('today')" id="tab-today" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">รับเข้าวันนี้ ✨</button>
+                <button onclick="window.setFilter('low')" id="tab-low" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">สต็อกต่ำ</button>
+                <button onclick="window.setFilter('done')" id="tab-done" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">เข้าคลังแล้ว</button>
+                <button onclick="window.setFilter('expired')" id="tab-expired" class="flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive">ใกล้หมดอายุ ⏰</button>
             </div>
-            <div id="table-in" class="grid grid-cols-1 gap-6"></div>
+            <div id="table-in" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
         </div>
     </main>
 
     <div id="medModal" class="fixed inset-0 bg-up-purple/40 backdrop-blur-md z-[2000] hidden items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl">
-            <h2 class="text-2xl font-black mb-6 text-up-purple">ลงทะเบียนเวชภัณฑ์</h2>
+            <h2 class="text-2xl font-black mb-6 text-up-purple">เพิ่มรายการเวชภัณฑ์</h2>
             <div class="space-y-4">
                 <input type="text" id="newMedName" placeholder="ชื่อเวชภัณฑ์" class="w-full p-4 bg-slate-50 rounded-xl border-none outline-none font-bold">
-                <input type="number" id="newMedStock" value="0" class="w-full p-4 bg-slate-50 rounded-xl border-none outline-none font-bold">
+                <input type="number" id="newMedStock" placeholder="จำนวนเริ่มต้น" class="w-full p-4 bg-slate-50 rounded-xl border-none outline-none font-bold">
+                <input type="date" id="newMedExpiry" class="w-full p-4 bg-slate-50 rounded-xl border-none outline-none font-bold">
                 <div class="flex gap-3 pt-4">
-                    <button onclick="closeModal()" class="flex-1 py-4 font-bold text-slate-400">ยกเลิก</button>
-                    <button onclick="saveNewMed()" class="flex-[2] py-4 bg-up-purple text-white rounded-xl font-black shadow-lg">บันทึกข้อมูล</button>
+                    <button onclick="window.closeModal()" class="flex-1 py-4 font-bold text-slate-400">ยกเลิก</button>
+                    <button onclick="window.saveNewMed()" class="flex-[2] py-4 bg-up-purple text-white rounded-xl font-black shadow-lg">บันทึก</button>
                 </div>
             </div>
         </div>
@@ -151,7 +138,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAmt2szWOjQBPfzfs7QfQVysgfaRzHyPa0",
@@ -162,132 +149,156 @@
             messagingSenderId: "381838942970",
             appId: "1:381838942970:web:8f83a02ba1544d54a95f43"
         };
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbyYkxDNL4CMcKBleSQaX4yZ3tTBmAGarWhxJhb0adCsej7lwRGpgcHETGjLSwouXmLjRg/exec";
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const medsRef = ref(db, 'meds');
 
-        window.meds = [];
+        window.sheetMeds = [];
+        window.firebaseMeds = [];
         window.filterIn = 'all';
-        const statusList = ["จัดทำแผน", "จัดทำใบขอซื้อ", "อนุมัติ PO", "ส่งมอบเวชภัณฑ์", "รอตรวจรับ", "รับเข้าคลังแล้ว"];
 
-        window.toggleMenu = () => {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        };
+        function parseSheetDate(dateStr) {
+            if (!dateStr) return null;
+            const d = new Date(dateStr);
+            return isNaN(d.getTime()) ? null : d;
+        }
 
-        window.setFilter = (f) => { window.filterIn = f; render(); }
+        async function fetchSheets() {
+            try {
+                const res = await fetch(SHEET_URL);
+                const data = await res.json();
+                window.sheetMeds = data.filter(item => item["ชื่อสินค้า"]).map(item => ({
+                    id: 'sheet-' + Math.random(),
+                    name: item["ชื่อสินค้า"],
+                    stock: parseInt(item["จำนวนสินค้าคงเหลือ"]) || 0,
+                    status: (item["Comment"] === "OK") ? "รับเข้าคลังแล้ว" : (item["Comment"] || "ปกติ"),
+                    category: item["กลุ่มสินค้า"] || "ทั่วไป",
+                    expiry: item["วันหมดอายุ"] || item["Expiry"] || null,
+                    isSheet: true,
+                    timestamp: item["วันที่บันทึก"] || null // รองรับถ้าในชีตมีวันที่บันทึก
+                }));
+                window.render();
+            } catch (e) { console.error("Sheets Error:", e); }
+        }
 
-        window.showToast = (msg) => {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = msg;
-            toast.style.display = 'flex';
-            setTimeout(() => toast.style.display = 'none', 3000);
-        };
-
-        window.openModal = () => document.getElementById('medModal').classList.remove('hidden');
-        window.closeModal = () => {
-            document.getElementById('medModal').classList.add('hidden');
-            document.getElementById('newMedName').value = '';
-            document.getElementById('newMedStock').value = '0';
-        };
-
-        window.saveNewMed = () => {
-            const name = document.getElementById('newMedName').value;
-            const stock = parseInt(document.getElementById('newMedStock').value) || 0;
-            if(name) {
-                const id = Date.now();
-                set(ref(db, 'meds/' + id), { id, name, stock, status: 'จัดทำแผน', arrivalDate: '', receivedDate: '' });
-                closeModal();
-                showToast("เพิ่มรายการสำเร็จ");
-            }
-        };
-
-        onValue(medsRef, (snapshot) => {
-            const data = snapshot.val();
-            window.meds = data ? Object.keys(data).map(k => data[k]) : [];
+        onValue(medsRef, (snap) => {
+            const data = snap.val();
+            window.firebaseMeds = data ? Object.keys(data).map(k => ({ ...data[k], id: k, isSheet: false })) : [];
             window.render();
         });
 
-        window.updateField = (id, field, value) => {
-            const item = window.meds.find(m => m.id == id);
-            if(item) {
-                item[field] = (field === 'stock') ? parseInt(value) : value;
-                set(ref(db, 'meds/' + id), item);
-                showToast("อัปเดตข้อมูลแล้ว");
-            }
-        };
-
-        window.delMed = (id) => { if(confirm("ลบรายการนี้?")) set(ref(db, 'meds/' + id), null); };
-
-        window.changePage = (page) => {
-            document.getElementById('page-db').className = page === 'db' ? 'fade-in space-y-6' : 'hidden-page';
-            document.getElementById('page-in').className = page === 'in' ? 'fade-in' : 'hidden-page';
-            document.getElementById('btn-db').classList.toggle('bg-white/20', page === 'db');
-            document.getElementById('btn-in').classList.toggle('bg-white/20', page === 'in');
-            if (window.innerWidth < 1024) {
-                document.getElementById('sidebar').classList.remove('active');
-                document.getElementById('overlay').classList.remove('active');
-            }
-        };
-
         window.render = () => {
             const q = document.getElementById('search').value.toLowerCase();
-            const today = new Date().toISOString().split('T')[0];
+            const combined = [...window.sheetMeds, ...window.firebaseMeds];
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+            const threeMonths = new Date(); threeMonths.setMonth(now.getMonth() + 3);
 
-            // 1. สถิติ
-            document.getElementById('stat-total').innerText = window.meds.length;
-            document.getElementById('stat-plan').innerText = window.meds.filter(m => m.status.includes('จัดทำ')).length;
-            document.getElementById('stat-wait').innerText = window.meds.filter(m => m.status === 'รอตรวจรับ').length;
-            document.getElementById('stat-done').innerText = window.meds.filter(m => m.status === 'รับเข้าคลังแล้ว').length;
-
-            // 2. Dashboard Table
-            const todayItems = window.meds.filter(m => m.receivedDate === today);
-            document.getElementById('table-db').innerHTML = todayItems.map(m => {
-                const idx = statusList.indexOf(m.status);
-                const pct = ((idx + 1) / statusList.length) * 100;
-                return `<tr class="border-b border-slate-50 text-sm">
-                    <td class="py-5 px-2"><b>${m.name}</b></td>
-                    <td class="py-5 w-40"><div class="up-progress-bg"><div class="up-progress-fill ${pct==100?'bg-done':''}" style="width:${pct}%"></div></div></td>
-                    <td class="py-5"><span class="status-pill bg-purple-50 text-purple-600">${m.status}</span></td>
-                    <td class="py-5"><b>${m.stock}</b></td>
-                    <td class="py-5 text-right pr-4 text-emerald-600 font-bold">สำเร็จแล้ว</td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="5" class="py-10 text-center text-slate-400">ไม่มีรายการวันนี้</td></tr>';
-
-            // 3. Inventory Logic กรองข้อมูล
-            let filteredIn = window.meds.filter(m => m.name.toLowerCase().includes(q));
-            if (window.filterIn === 'low') filteredIn = filteredIn.filter(m => m.stock < 10);
-            else if (window.filterIn === 'done') filteredIn = filteredIn.filter(m => m.status === 'รับเข้าคลังแล้ว');
-            else if (window.filterIn === 'plan') filteredIn = filteredIn.filter(m => m.status.includes('จัดทำ'));
-            else if (window.filterIn === 'wait') filteredIn = filteredIn.filter(m => m.status === 'รอตรวจรับ');
-
-            // Update Tab UI
-            ['all', 'plan', 'wait', 'low', 'done'].forEach(t => {
-                const btn = document.getElementById('tab-' + t);
-                if(btn) btn.className = `flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] ${window.filterIn === t ? 'tab-active' : 'tab-inactive'}`;
+            // Logic กรองรายการที่มา "วันนี้"
+            const getTodayItems = (list) => list.filter(m => {
+                if (!m.timestamp) return false;
+                return m.timestamp.includes(todayStr);
             });
 
-            document.getElementById('table-in').innerHTML = filteredIn.map(m => {
-                const currentStep = statusList.indexOf(m.status) + 1;
-                return `<div class="med-card p-6 border border-slate-100">
-                    <div class="flex flex-col lg:flex-row justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-xl flex items-center justify-center bg-slate-100 text-2xl">${m.stock < 10 ? '⚠️' : '📦'}</div>
-                            <div><h4 class="font-black">${m.name}</h4><p class="text-xs text-slate-400">${m.status}</p></div>
+            const getExpiredItems = (list) => list.filter(m => {
+                const expDate = parseSheetDate(m.expiry);
+                return expDate && expDate <= threeMonths;
+            });
+
+            // อัปเดต Stats บน Dashboard
+            document.getElementById('stat-total').innerText = combined.length;
+            document.getElementById('stat-today').innerText = getTodayItems(combined).length;
+            document.getElementById('stat-warning').innerText = combined.filter(m => m.stock < 10).length;
+            document.getElementById('stat-done').innerText = combined.filter(m => m.status === 'รับเข้าคลังแล้ว').length;
+            document.getElementById('stat-expired').innerText = getExpiredItems(combined).length;
+
+            let filtered = combined.filter(m => m.name.toLowerCase().includes(q));
+            if (window.filterIn === 'today') filtered = getTodayItems(filtered);
+            if (window.filterIn === 'low') filtered = filtered.filter(m => m.stock < 10);
+            if (window.filterIn === 'done') filtered = filtered.filter(m => m.status === 'รับเข้าคลังแล้ว');
+            if (window.filterIn === 'expired') filtered = getExpiredItems(filtered);
+
+            document.getElementById('table-in').innerHTML = filtered.map(m => {
+                const expDate = parseSheetDate(m.expiry);
+                const isExpired = expDate && expDate < now;
+                const isNearExp = expDate && expDate <= threeMonths && !isExpired;
+                const isNew = m.timestamp && m.timestamp.includes(todayStr);
+
+                return `
+                <div class="med-card p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex flex-col gap-1">
+                                <span class="status-pill ${m.isSheet ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'} uppercase">
+                                    ${m.isSheet ? 'Google Sheets' : 'Manual Sync'}
+                                </span>
+                                ${isNew ? '<span class="status-pill bg-yellow-100 text-yellow-700">NEW TODAY ✨</span>' : ''}
+                            </div>
+                            ${isExpired ? '<span class="status-pill bg-red-100 text-red-600 animate-pulse-slow">หมดอายุแล้ว</span>' : 
+                              isNearExp ? '<span class="status-pill bg-orange-100 text-orange-600">ใกล้หมดอายุ</span>' : 
+                              `<span class="status-pill ${m.status==='รับเข้าคลังแล้ว'?'bg-emerald-50 text-emerald-600':'bg-slate-100 text-slate-500'}">${m.status}</span>`}
                         </div>
-                        <div class="flex gap-2 items-end flex-wrap lg:flex-nowrap">
-                            <select onchange="window.updateField(${m.id}, 'status', this.value)" class="flex-1 bg-white border rounded p-2 text-xs font-bold">
-                                ${statusList.map(s => `<option value="${s}" ${m.status===s?'selected':''}>${s}</option>`).join('')}
-                            </select>
-                            <input type="number" value="${m.stock}" onchange="window.updateField(${m.id}, 'stock', this.value)" class="w-20 border rounded p-2 text-xs font-bold">
-                            <input type="date" value="${m.receivedDate}" onchange="window.updateField(${m.id}, 'receivedDate', this.value)" class="border rounded p-2 text-xs font-bold">
-                            <button onclick="window.delMed(${m.id})" class="p-2.5 bg-red-50 text-red-500 rounded-lg">🗑️</button>
-                        </div>
+                        <h4 class="font-black text-slate-800 text-lg leading-tight mb-1">${m.name}</h4>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            ${m.expiry ? 'EXP: ' + m.expiry : (m.category || 'เวชภัณฑ์')}
+                        </p>
                     </div>
-                </div>`;
-            }).join('') || '<div class="text-center py-20 opacity-30">ไม่พบรายการ</div>';
+                    
+                    <div class="mt-6 flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
+                        <div class="flex-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">จำนวนคงเหลือ</p>
+                            ${m.isSheet ? 
+                                `<p class="text-xl font-black text-slate-700">${m.stock}</p>` : 
+                                `<input type="number" value="${m.stock}" onchange="window.updateStock('${m.id}', this.value)" 
+                                 class="w-full bg-transparent border-none text-xl font-black outline-none focus:text-up-purple">`
+                            }
+                        </div>
+                        ${!m.isSheet ? `<button onclick="window.delMed('${m.id}')" class="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">🗑️</button>` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('') || '<div class="col-span-full py-20 text-center opacity-30 font-bold">ไม่พบข้อมูลที่ต้องการ</div>';
         };
+
+        window.updateStock = (id, val) => update(ref(db, `meds/${id}`), { stock: parseInt(val) });
+        window.delMed = (id) => confirm('ลบรายการนี้ใช่หรือไม่?') && remove(ref(db, `meds/${id}`));
+        
+        window.saveNewMed = () => {
+            const name = document.getElementById('newMedName').value;
+            const stock = parseInt(document.getElementById('newMedStock').value);
+            const expiry = document.getElementById('newMedExpiry').value;
+            const timestamp = new Date().toISOString(); // บันทึกเวลาปัจจุบันลง Firebase
+            
+            if(!name || isNaN(stock)) return alert("กรุณาระบุชื่อและจำนวน");
+            push(medsRef, { name, stock, expiry, status: 'รอดำเนินการ', timestamp });
+            window.closeModal();
+        };
+
+        window.changePage = (p) => {
+            document.getElementById('page-db').classList.toggle('hidden-page', p !== 'db');
+            document.getElementById('page-in').classList.toggle('hidden-page', p !== 'in');
+            document.getElementById('btn-db').classList.toggle('bg-white/20', p === 'db');
+            document.getElementById('btn-in').classList.toggle('bg-white/20', p === 'in');
+            if(window.innerWidth < 1024) window.toggleMenu();
+        };
+
+        window.goToFilter = (f) => { window.changePage('in'); window.setFilter(f); };
+        window.setFilter = (f) => {
+            window.filterIn = f;
+            ['all', 'today', 'low', 'done', 'expired'].forEach(t => {
+                const el = document.getElementById('tab-'+t);
+                if(el) el.className = (f===t) ? 'flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-active' : 'flex-1 lg:flex-none px-6 py-3 rounded-full font-black text-[10px] tab-inactive';
+            });
+            window.render();
+        };
+
+        window.toggleMenu = () => { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); };
+        window.openModal = () => document.getElementById('medModal').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('medModal').classList.add('hidden');
+
+        fetchSheets();
     </script>
 </body>
 </html>
