@@ -29,8 +29,6 @@
         .tab-inactive { background: white; color: #64748B; border: 1px solid #E2E8F0; }
         .stat-btn { transition: all 0.2s; cursor: pointer; }
         .stat-btn:active { transform: scale(0.95); }
-        .animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
         .custom-scrollbar::-webkit-scrollbar { height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
@@ -57,25 +55,23 @@
                 <span class="mr-4 text-xl">📦</span> จัดการสต็อก
             </button>
             <button onclick="window.goToFilter('expired')" id="btn-exp-side" class="w-full flex items-center p-4 rounded-2xl hover:bg-white/10 transition-all opacity-60 font-bold text-red-300">
-                <span class="mr-4 text-xl">⏰</span> ใกล้หมดอายุ (90 วัน)
+                <span class="mr-4 text-xl">⏰</span> ยาใกล้หมดอายุ 
             </button>
         </div>
     </nav>
 
     <main class="flex-1 p-4 lg:p-12 overflow-x-hidden">
         <header class="lg:hidden mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm">
-            <span class="font-black text-up-purple uppercase">UP Hospital</span>
+            <span class="font-black text-up-purple uppercase text-sm">UP Hospital</span>
             <button onclick="window.toggleMenu()" class="text-2xl text-up-purple">☰</button>
         </header>
 
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
-            <div class="relative w-full max-w-2xl"> 
-                <input type="text" id="search" onkeyup="window.render()" placeholder="ค้นหาชื่อเวชภัณฑ์..." class="w-full pl-12 pr-6 py-4 rounded-[1.2rem] border-none shadow-sm focus:ring-4 focus:ring-purple-100 outline-none bg-white font-bold text-sm">
-                <span class="absolute left-4 top-4 text-xl opacity-30">🔍</span>
-            </div>
-        </div>
-
         <div id="page-db" class="fade-in space-y-6">
+            <div class="mb-8">
+                <h2 class="text-2xl font-black text-slate-800">คลังยากลางโรงพยาบาลมหาวิทยาลัยพะเยา</h2>
+                <p class="text-sm text-slate-500 font-bold">ภาพรวมคลังเวชภัณฑ์ประจำวันนี้</p>
+            </div>
+
             <div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
                 <div onclick="window.goToFilter('all')" class="stat-btn bg-white p-5 rounded-[1.5rem] shadow-sm border-b-4 border-up-purple text-center">
                     <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">รวมทั้งหมด</p>
@@ -107,7 +103,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-black text-slate-700 flex items-center gap-2">
                         <span class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xs">✨</span>
-                        รายการที่รับเข้ามาล่าสุด
+                        รายการที่รับเข้ามาวันนี้ (Transaction รับเข้า)
                     </h3>
                     <button onclick="window.changePage('in')" class="text-xs font-bold text-up-purple hover:underline">ดูทั้งหมด →</button>
                 </div>
@@ -117,7 +113,7 @@
                             <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                 <th class="px-4 py-2">วัน-เวลาที่บันทึก</th>
                                 <th class="px-4 py-2">ชื่อเวชภัณฑ์</th>
-                                <th class="px-4 py-2 text-center">คงเหลือ</th>
+                                <th class="px-4 py-2 text-center">จำนวนที่รับ</th>
                                 <th class="px-4 py-2 text-right">แหล่งข้อมูล</th>
                             </tr>
                         </thead>
@@ -128,13 +124,18 @@
         </div>
 
         <div id="page-in" class="hidden-page fade-in">
-            <div class="flex flex-wrap gap-2 mb-6 bg-slate-200/50 p-1.5 rounded-[1.2rem] w-full lg:w-fit">
-                <button onclick="window.setFilter('all')" id="tab-all" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-active">ทั้งหมด</button>
-                <button onclick="window.setFilter('out')" id="tab-out" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive text-red-600">ยาหมด ❌</button>
-                <button onclick="window.setFilter('low')" id="tab-low" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive text-orange-600">สต็อกต่ำ ⚠️</button>
-                <button onclick="window.setFilter('today')" id="tab-today" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive">วันนี้ ✨</button>
-                <button onclick="window.setFilter('done')" id="tab-done" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive">เข้าคลังแล้ว</button>
-                <button onclick="window.setFilter('expired')" id="tab-expired" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive">หมดอายุ ⏰</button>
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                <div class="relative w-full max-w-xl"> 
+                    <input type="text" id="search" onkeyup="window.render()" placeholder="ค้นหาชื่อเวชภัณฑ์ในสต็อก..." class="w-full pl-12 pr-6 py-4 rounded-[1.2rem] border-none shadow-sm focus:ring-4 focus:ring-purple-100 outline-none bg-white font-bold text-sm">
+                    <span class="absolute left-4 top-4 text-xl opacity-30">🔍</span>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 bg-slate-200/50 p-1.5 rounded-[1.2rem] w-full md:w-fit">
+                    <button onclick="window.setFilter('all')" id="tab-all" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-active">ทั้งหมด</button>
+                    <button onclick="window.setFilter('out')" id="tab-out" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive text-red-600">ยาหมด ❌</button>
+                    <button onclick="window.setFilter('low')" id="tab-low" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive text-orange-600">สต็อกต่ำ ⚠️</button>
+                    <button onclick="window.setFilter('expired')" id="tab-expired" class="flex-1 lg:flex-none px-4 py-2.5 rounded-full font-black text-[10px] tab-inactive text-red-500">หมดอายุ ⏰</button>
+                </div>
             </div>
 
             <div class="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
@@ -169,213 +170,199 @@
             messagingSenderId: "381838942970",
             appId: "1:381838942970:web:8f83a02ba1544d54a95f43"
         };
-        const SHEET_URL = "https://script.google.com/macros/s/AKfycbye7qKQut507m8ilm1uxjUMuEDY2MeLOrrm6kdEqDI0Ns85lUF3qZdGciwK4cROZYXyJg/exec";
+        
+        const SHEET_URL = "https://script.google.com/macros/s/AKfycbzXYB2dSX2Mt4elZ7wjp7hruzyaK0edqPn59NzFDqYOM2gljCvSuAwIuenZ0SCQQYz7GQ/exec";
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const medsRef = ref(db, 'meds');
 
+        // Global States
         window.sheetMeds = [];
+        window.sheetExpiringMeds = [];
+        window.sheetTransactions = [];
         window.firebaseMeds = [];
         window.filterIn = 'all';
 
-        // 1. ฟังก์ชันจัดการวันที่ให้ฉลาดขึ้น (รองรับ พ.ศ. และรูปแบบ / )
-        function parseSheetDate(dateStr) {
-            if (!dateStr) return null;
-            const cleanStr = String(dateStr).trim();
-            if (!cleanStr || cleanStr === "-" || cleanStr === "0") return null;
+        const isToday = (dateVal) => {
+            if (!dateVal) return false;
+            const d = new Date(dateVal);
+            if (isNaN(d.getTime())) return false;
+            const today = new Date();
+            return d.toLocaleDateString('th-TH') === today.toLocaleDateString('th-TH');
+        };
 
-            if (cleanStr.includes('/')) {
-                const p = cleanStr.split('/');
-                if (p.length === 3) {
-                    let d = parseInt(p[0]), m = parseInt(p[1]) - 1, y = parseInt(p[2]);
-                    if (y > 2500) y -= 543; 
-                    const dateObj = new Date(y, m, d);
-                    return isNaN(dateObj.getTime()) ? null : dateObj;
-                }
-            }
-            const d = new Date(cleanStr);
-            return isNaN(d.getTime()) ? null : d;
-        }
-
-        // 2. ดึงข้อมูลจาก Sheets และระบุชื่อคอลัมน์ใหม่
+        // 1. ดึงข้อมูลจาก Sheets
         async function fetchSheets() {
             try {
-                const res = await fetch(SHEET_URL);
+                const res = await fetch(`${SHEET_URL}?action=dashboard_data&t=${Date.now()}`);
                 const data = await res.json();
-                window.sheetMeds = data.filter(item => item["ชื่อสินค้า"]).map(item => {
-                    // ดึงจากคอลัมน์ "รายงานสินค้าที่ใกล้หมดอายุ"
-                    const rawExp = item["รายงานสินค้าที่ใกล้หมดอายุ"] || item["วันหมดอายุ"] || item["Expiry"];
-                    const dateObj = parseSheetDate(rawExp);
+                
+                window.sheetMeds = (data.inventory || []).filter(item => item["ชื่อสินค้า"]).map(item => ({
+                    id: 'inv-' + Math.random(),
+                    name: item["ชื่อสินค้า"],
+                    stock: parseInt(item["จำนวนสินค้าคงเหลือ"]) || 0,
+                    minStock: parseInt(item["จำนวนขั้นต่ำ"]) || 0,
+                    status: (item["Comment"] === "OK") ? "รับเข้าคลังแล้ว" : (item["Comment"] || "ปกติ"),
+                    category: item["กลุ่มสินค้า"] || "ทั่วไป",
+                    expiry: item["วันหมดอายุ"] || null,
+                    isSheet: true
+                }));
 
-                    return {
-                        id: 'sheet-' + Math.random(),
-                        name: item["ชื่อสินค้า"],
-                        stock: parseInt(item["จำนวนสินค้าคงเหลือ"]) || 0,
-                        minStock: parseInt(item["จำนวนขั้นต่ำ"]) || 0,
-                        status: (item["Comment"] === "OK") ? "รับเข้าคลังแล้ว" : (item["Comment"] || "ปกติ"),
-                        category: item["กลุ่มสินค้า"] || "ทั่วไป",
-                        expiry: dateObj ? dateObj.toISOString() : null, 
-                        expiryRaw: rawExp, // เก็บค่าดั้งเดิมไว้แสดงผล
-                        isSheet: true,
-                        timestamp: item["วันที่บันทึก"] || null
-                    };
-                });
+                window.sheetExpiringMeds = (data.expiring || []).filter(item => item["ชื่อสินค้า"]).map(item => ({
+                    name: item["ชื่อสินค้า"],
+                    expiry: item["วันหมดอายุ"],
+                    stock: item["จำนวนสินค้าคงเหลือ"] || 0
+                }));
+
+                window.sheetTransactions = (data.transactions || []).map(item => ({
+                    name: item["ชื่อสินค้า"],
+                    qty: item["จำนวนรับ"] || item["จำนวน"] || 0,
+                    timestamp: item["วันที่บันทึก"] || item["Timestamp"] || item["วันที่"],
+                    source: 'Sheets'
+                }));
+
                 window.render();
             } catch (e) { console.error("Sheets Error:", e); }
         }
 
+        // 2. ดึงข้อมูลจาก Firebase
         onValue(medsRef, (snap) => {
             const data = snap.val();
             window.firebaseMeds = data ? Object.keys(data).map(k => ({ 
                 ...data[k], 
                 id: k, 
                 isSheet: false,
+                stock: parseInt(data[k].stock) || 0,
                 minStock: parseInt(data[k].minStock) || 0,
-                expiry: data[k].expiry ? parseSheetDate(data[k].expiry)?.toISOString() : null
+                timestamp: data[k].timestamp || null
             })) : [];
             window.render();
         });
 
+        // 3. Render
         window.render = () => {
             const q = document.getElementById('search').value.toLowerCase();
-            const combined = [...window.sheetMeds, ...window.firebaseMeds];
+            const combinedInventory = [...window.sheetMeds, ...window.firebaseMeds];
+            const tableBody = document.getElementById('table-in-body');
             
             const now = new Date();
-            now.setHours(0,0,0,0);
-            const limit90Days = new Date(); 
-            limit90Days.setDate(now.getDate() + 90);
-
-            const isToday = (m) => m.timestamp && String(m.timestamp).includes(now.toISOString().split('T')[0]);
+            const limit90Days = new Date(); limit90Days.setDate(now.getDate() + 90);
             const isLow = (m) => m.stock > 0 && m.stock < (m.minStock || 0);
-            const isExpiredOrNear = (m) => {
-                if (!m.expiry) return false;
-                const expDate = new Date(m.expiry);
-                return expDate <= limit90Days;
-            };
+            const isExp = (m) => m.expiry && new Date(m.expiry) < now;
+            const isNear = (m) => m.expiry && (new Date(m.expiry) >= now && new Date(m.expiry) <= limit90Days);
 
-            // Update UI Stats
-            document.getElementById('stat-total').innerText = combined.length;
-            document.getElementById('stat-out').innerText = combined.filter(m => m.stock <= 0).length;
-            document.getElementById('stat-warning').innerText = combined.filter(isLow).length;
-            document.getElementById('stat-today').innerText = combined.filter(isToday).length;
-            document.getElementById('stat-done').innerText = combined.filter(m => m.status === 'รับเข้าคลังแล้ว').length;
-            document.getElementById('stat-expired').innerText = combined.filter(isExpiredOrNear).length;
-
-            // Render Recent Table
-            const recentMeds = [...combined]
-                .filter(m => m.timestamp)
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                .slice(0, 5);
+            // Stats Update
+            const todayCount = window.sheetTransactions.filter(t => isToday(t.timestamp)).length + 
+                               window.firebaseMeds.filter(m => isToday(m.timestamp)).length;
             
-            document.getElementById('recent-table-body').innerHTML = recentMeds.map(m => `
-                <tr class="bg-slate-50/50 hover:bg-slate-100 transition-colors">
-                    <td class="px-4 py-3 rounded-l-xl"><p class="text-[11px] font-bold text-slate-600">${m.timestamp}</p></td>
-                    <td class="px-4 py-3"><p class="text-sm font-black text-slate-800 line-clamp-1">${m.name}</p></td>
-                    <td class="px-4 py-3 text-center">
-                        <span class="bg-white px-3 py-1 rounded-full text-xs font-black shadow-sm border border-slate-100 ${m.stock <= 0 ? 'text-red-600' : isLow(m) ? 'text-orange-500' : ''}">
-                            ${m.stock}
-                        </span>
-                    </td>
-                    <td class="px-4 py-3 text-right rounded-r-xl">
-                        <span class="status-pill ${m.isSheet ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}">${m.isSheet ? 'Sheets' : 'Firebase'}</span>
-                    </td>
-                </tr>
-            `).join('') || '<tr><td colspan="4" class="text-center py-4 text-slate-400 italic">ไม่มีข้อมูล</td></tr>';
+            const updateUI = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
+            updateUI('stat-total', combinedInventory.length);
+            updateUI('stat-out', combinedInventory.filter(m => m.stock <= 0).length);
+            updateUI('stat-warning', combinedInventory.filter(isLow).length);
+            updateUI('stat-today', todayCount);
+            updateUI('stat-done', combinedInventory.filter(m => m.status === 'รับเข้าคลังแล้ว').length);
+            updateUI('stat-expired', window.sheetExpiringMeds.length);
 
-            // Filter & Render Main Table
-            let filtered = combined.filter(m => m.name.toLowerCase().includes(q));
+            // Dashboard Table
+            const recentBody = document.getElementById('recent-table-body');
+            if(recentBody) {
+                const allRecent = [...window.sheetTransactions, ...window.firebaseMeds.filter(m => isToday(m.timestamp)).map(f => ({ name: f.name, qty: f.stock, timestamp: f.timestamp, source: 'Firebase' }))]
+                    .filter(r => isToday(r.timestamp))
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 10);
+                
+                recentBody.innerHTML = allRecent.map(m => `
+                    <tr class="bg-slate-50/50 hover:bg-slate-100 transition-colors">
+                        <td class="px-4 py-3 rounded-l-xl"><p class="text-[11px] font-bold text-slate-600">${new Date(m.timestamp).toLocaleString('th-TH')}</p></td>
+                        <td class="px-4 py-3"><p class="text-sm font-black text-slate-800">${m.name}</p></td>
+                        <td class="px-4 py-3 text-center"><span class="bg-white px-3 py-1 rounded-full text-xs font-black shadow-sm border border-slate-100">${m.qty}</span></td>
+                        <td class="px-4 py-3 text-right rounded-r-xl"><span class="status-pill ${m.source==='Sheets'?'bg-blue-50 text-blue-600':'bg-purple-50 text-purple-600'}">${m.source}</span></td>
+                    </tr>
+                `).join('') || '<tr><td colspan="4" class="text-center py-4 opacity-30 italic font-bold">ไม่มีรายการรับเข้าในวันนี้</td></tr>';
+            }
+
+            // Inventory Table
+            if (window.filterIn === 'expired') {
+                tableBody.innerHTML = window.sheetExpiringMeds.filter(m => m.name.toLowerCase().includes(q)).map(m => `
+                    <tr class="border-b border-red-50 bg-red-50/30 hover:bg-red-50 transition-colors">
+                        <td class="px-6 py-4 font-bold text-slate-800">${m.name}</td>
+                        <td class="px-6 py-4 text-center"><span class="text-lg font-black text-red-600">${m.stock}</span></td>
+                        <td class="px-6 py-4 font-black text-red-500">EXP: ${m.expiry ? new Date(m.expiry).toLocaleDateString('th-TH') : 'ไม่ระบุ'}</td>
+                        <td class="px-6 py-4"><span class="status-pill bg-red-600 text-white">ใกล้หมดอายุ</span></td>
+                        <td class="px-6 py-4 text-right"><span class="status-pill bg-blue-50 text-blue-600">Sheets</span></td>
+                    </tr>
+                `).join('') || '<tr><td colspan="5" class="py-20 text-center opacity-30 font-bold">ไม่พบสินค้าใกล้หมดอายุ</td></tr>';
+                return;
+            }
+
+            let filtered = combinedInventory.filter(m => m.name.toLowerCase().includes(q));
             if (window.filterIn === 'out') filtered = filtered.filter(m => m.stock <= 0);
             if (window.filterIn === 'low') filtered = filtered.filter(isLow);
-            if (window.filterIn === 'today') filtered = filtered.filter(isToday);
-            if (window.filterIn === 'done') filtered = filtered.filter(m => m.status === 'รับเข้าคลังแล้ว');
-            if (window.filterIn === 'expired') filtered = filtered.filter(isExpiredOrNear);
 
-            document.getElementById('table-in-body').innerHTML = filtered.map(m => {
-                const expDate = m.expiry ? new Date(m.expiry) : null;
-                const isExpired = expDate && expDate < now;
-                const isNearExp = expDate && expDate <= limit90Days && !isExpired;
-                
-                return `
+            tableBody.innerHTML = filtered.map(m => `
                 <tr class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-4">
                         <div class="flex flex-col">
                             <span class="font-bold text-slate-800 text-sm">${m.name}</span>
-                            ${m.timestamp ? `<span class="text-[9px] text-slate-400 font-bold mt-1 uppercase">บันทึกเมื่อ: ${m.timestamp}</span>` : ''}
+                            <span class="text-[9px] text-slate-400 font-bold uppercase">${m.category}</span>
                         </div>
                     </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex flex-col items-center">
-                            ${m.isSheet ? 
-                                `<span class="text-lg font-black ${m.stock <= 0 ? 'text-red-600' : isLow(m) ? 'text-orange-500' : 'text-slate-700'}">${m.stock}</span>` :
-                                `<input type="number" value="${m.stock}" onchange="window.updateStock('${m.id}', this.value)" class="w-20 text-center bg-slate-100 border-none rounded-lg py-1 font-black">`
-                            }
+                            ${m.isSheet ? `<span class="text-lg font-black ${m.stock <= 0 ? 'text-red-600' : isLow(m) ? 'text-orange-500' : 'text-slate-700'}">${m.stock}</span>` :
+                             `<input type="number" value="${m.stock}" onchange="window.updateStock('${m.id}', this.value)" class="w-16 text-center bg-slate-100 border-none rounded-lg py-1 font-black focus:ring-2 focus:ring-purple-300">`}
                             <span class="text-[9px] font-bold text-slate-400">Min: ${m.minStock}</span>
                         </div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-bold text-slate-500">${m.category}</span>
-                            <span class="text-[10px] font-black ${isExpired ? 'text-red-600' : isNearExp ? 'text-orange-500' : 'text-slate-400'}">
-                                ${expDate ? 'EXP: ' + expDate.toLocaleDateString('th-TH') : '-'}
-                            </span>
-                        </div>
+                        <span class="text-[10px] font-black ${isExp(m) ? 'text-red-600' : isNear(m) ? 'text-orange-500' : 'text-slate-500'}">
+                            ${m.expiry ? 'EXP: ' + new Date(m.expiry).toLocaleDateString('th-TH') : 'ไม่ระบุวันหมดอายุ'}
+                        </span>
                     </td>
                     <td class="px-6 py-4">
                         ${m.stock <= 0 ? '<span class="status-pill bg-red-600 text-white">ยาหมด!</span>' :
-                          isExpired ? '<span class="status-pill bg-red-100 text-red-600 animate-pulse-slow">หมดอายุ!</span>' : 
-                          isNearExp ? '<span class="status-pill bg-orange-100 text-orange-600">ใกล้หมดอายุ</span>' : 
+                          isExp(m) ? '<span class="status-pill bg-red-100 text-red-600">หมดอายุ!</span>' :
+                          isNear(m) ? '<span class="status-pill bg-orange-100 text-orange-600">ใกล้หมดอายุ</span>' :
                           isLow(m) ? '<span class="status-pill bg-orange-50 text-orange-500">สต็อกต่ำ</span>' :
                           `<span class="status-pill ${m.status==='รับเข้าคลังแล้ว'?'bg-emerald-50 text-emerald-600':'bg-slate-100 text-slate-500'}">${m.status}</span>`}
                     </td>
                     <td class="px-6 py-4 text-right">
                         <span class="status-pill ${m.isSheet ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}">${m.isSheet ? 'Sheets' : 'Firebase'}</span>
                     </td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="5" class="py-20 text-center opacity-30 font-bold">ไม่พบข้อมูล</td></tr>';
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="py-20 text-center opacity-30 font-bold">ไม่พบข้อมูลเวชภัณฑ์</td></tr>';
         };
 
-        // UI Window Functions
-        window.updateStock = (id, val) => update(ref(db, `meds/${id}`), { stock: parseInt(val) });
-        
-        window.changePage = (p) => {
-            document.getElementById('page-db').classList.toggle('hidden-page', p !== 'db');
-            document.getElementById('page-in').classList.toggle('hidden-page', p !== 'in');
-            
-            // Toggle Active Classes
-            document.getElementById('btn-db').classList.toggle('bg-white/20', p === 'db');
-            document.getElementById('btn-db').classList.toggle('opacity-60', p !== 'db');
-            document.getElementById('btn-in').classList.toggle('bg-white/20', p === 'in');
-            document.getElementById('btn-in').classList.toggle('opacity-60', p !== 'in');
-
-            if(window.innerWidth < 1024) window.toggleMenu();
+        // UI Handlers
+        window.updateStock = (id, val) => {
+            update(ref(db, `meds/${id}`), { stock: parseInt(val) }).catch(err => alert("Error updating Firebase"));
         };
-
-        window.goToFilter = (f) => { 
-            window.changePage('in'); 
-            window.setFilter(f); 
-        };
-
-        window.setFilter = (f) => { 
-            window.filterIn = f; 
-            // Update Tab styles
-            const tabs = ['all', 'out', 'low', 'today', 'done', 'expired'];
-            tabs.forEach(t => {
-                const el = document.getElementById(`tab-${t}`);
-                if(el) {
-                    el.classList.toggle('tab-active', f === t);
-                    el.classList.toggle('tab-inactive', f !== t);
-                }
-            });
-            window.render(); 
-        };
-
         window.toggleMenu = () => { 
             document.getElementById('sidebar').classList.toggle('active'); 
             document.getElementById('overlay').classList.toggle('active'); 
         };
+        window.changePage = (p) => {
+            document.getElementById('page-db').classList.toggle('hidden-page', p !== 'db');
+            document.getElementById('page-in').classList.toggle('hidden-page', p !== 'in');
+            document.getElementById('btn-db').classList.toggle('bg-white/20', p === 'db');
+            document.getElementById('btn-db').classList.toggle('opacity-60', p !== 'db');
+            document.getElementById('btn-in').classList.toggle('bg-white/20', p === 'in');
+            document.getElementById('btn-in').classList.toggle('opacity-60', p !== 'in');
+            if(window.innerWidth < 1024 && document.getElementById('sidebar').classList.contains('active')) window.toggleMenu();
+            window.render();
+        };
+        window.goToFilter = (f) => { window.changePage('in'); window.setFilter(f); };
+        window.setFilter = (f) => { 
+            window.filterIn = f; 
+            ['all', 'out', 'low', 'expired'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if(el) { el.classList.toggle('tab-active', f === t); el.classList.toggle('tab-inactive', f !== t); }
+            });
+            window.render(); 
+        };
 
         fetchSheets();
+        setInterval(fetchSheets, 30000); 
     </script>
 </body>
 </html>
