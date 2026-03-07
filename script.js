@@ -93,26 +93,11 @@ window.goToFilter = (f) => {
     window.changePage('in'); 
 };
 
-// เพิ่มฟังก์ชันสำหรับคลิกไปดูรายการเบิกทั้งหมด
-window.goWithdrawFilter = () => {
-    window.currentFilter = 'withdraw';
-    const label = document.getElementById('filter-status-label');
-    if(label) label.innerText = 'รายการเบิกสะสม (3 เดือน)';
-    window.changePage('in');
-};
-
 window.setFilter = (f) => {
     window.currentFilter = f;
     const label = document.getElementById('filter-status-label');
     if(label) {
-        const labels = { 
-            'all': 'ทั้งหมด', 
-            'low': 'ใกล้หมด', 
-            'out': 'หมดคลัง', 
-            'exp': 'วิกฤต/หมดอายุ', 
-            'dead': 'Dead Stock',
-            'withdraw': 'รายการเบิกสะสม (3 เดือน)'
-        };
+        const labels = { 'all': 'ทั้งหมด', 'low': 'ใกล้หมด', 'out': 'หมดคลัง', 'exp': 'วิกฤต/หมดอายุ', 'dead': 'Dead Stock' };
         label.innerText = labels[f] || 'ทั้งหมด';
     }
     window.render();
@@ -208,7 +193,7 @@ onValue(ref(db, 'meds'), (snap) => {
     window.render();
 });
 
-// --- 5. Updated Render Logic (With Withdrawal Sort) ---
+// --- 5. Updated Render Logic (180 Days Gate) ---
 window.render = () => {
     const q = (document.getElementById('search')?.value || "").toLowerCase();
     
@@ -219,32 +204,23 @@ window.render = () => {
     
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    
-    const threeMonthsAgo = new Date();
-    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
-    // สร้าง Map สำหรับวันเบิกสุดท้าย
     const lastWithdrawMap = window.sheetWithdrawals.reduce((acc, curr) => {
         const d = window.parseDate(curr.timestamp);
         if (d && (!acc[curr.normName] || d > acc[curr.normName])) acc[curr.normName] = d;
         return acc;
     }, {});
 
-    // คำนวณยอดเบิกสะสม 3 เดือนสำหรับยาแต่ละชนิด
-    const withdrawSumMap = window.sheetWithdrawals.reduce((acc, curr) => {
-        const d = window.parseDate(curr.timestamp);
-        if (d && d >= threeMonthsAgo) {
-            acc[curr.normName] = (acc[curr.normName] || 0) + curr.qty;
-        }
-        return acc;
-    }, {});
-
     const stats = allInv.reduce((acc, item) => {
         if (item.stock > 0 && item.stock < item.minStock) acc.near_exp++;
         if (item.stock <= 0) acc.out++;
+        
+        // เกณฑ์แจ้งเตือนยาหมดอายุปรับเป็น 180 วัน
         if (item.daysToExpiry !== undefined && item.daysToExpiry <= 180) acc.expired++;
+        
         const lastDate = lastWithdrawMap[item.normName];
         if (item.stock > 0 && (!lastDate || lastDate < sixMonthsAgo)) acc.dead++;
+        
         return acc;
     }, { near_exp: 0, out: 0, expired: 0, dead: 0 });
 
@@ -253,6 +229,7 @@ window.render = () => {
         if(el) el.innerText = val.toLocaleString(); 
     };
     
+    // อัปเดตตัวเลขหน้า Manage และ Dashboard
     ['stat-total', 'stat-total-db'].forEach(id => update(id, allInv.length));
     ['stat-low', 'stat-low-db'].forEach(id => update(id, stats.near_exp));
     ['stat-out', 'stat-out-db'].forEach(id => update(id, stats.out));
@@ -272,18 +249,13 @@ window.render = () => {
             const last = lastWithdrawMap[i.normName];
             return i.stock > 0 && (!last || last < sixMonthsAgo);
         });
-    } else if (window.currentFilter === 'withdraw') {
-        // กรองเฉพาะที่มีรายการเบิกใน 3 เดือน และเรียงจากมากไปน้อย
-        filtered = filtered
-            .filter(i => (withdrawSumMap[i.normName] || 0) > 0)
-            .sort((a, b) => (withdrawSumMap[b.normName] || 0) - (withdrawSumMap[a.normName] || 0));
     }
 
-    renderTable(filtered, lastWithdrawMap, sixMonthsAgo, withdrawSumMap);
+    renderTable(filtered, lastWithdrawMap, sixMonthsAgo);
     renderWithdrawSummary(allInv);
 };
 
-function renderTable(data, lastWithdrawMap, sixMonthsAgo, withdrawSumMap = {}) {
+function renderTable(data, lastWithdrawMap, sixMonthsAgo) {
     const tbody = document.getElementById('table-in-body');
     if (!tbody) return;
 
@@ -291,7 +263,6 @@ function renderTable(data, lastWithdrawMap, sixMonthsAgo, withdrawSumMap = {}) {
         const lastWithdraw = lastWithdrawMap[m.normName];
         const isDead = m.stock > 0 && (!lastWithdraw || lastWithdraw < sixMonthsAgo);
         const medJson = encodeURIComponent(JSON.stringify(m));
-        const totalWithdraw = withdrawSumMap[m.normName] || 0;
         
         let badgeClass = "bg-emerald-100 text-emerald-600";
         let statusText = "ปกติ";
@@ -302,6 +273,7 @@ function renderTable(data, lastWithdrawMap, sixMonthsAgo, withdrawSumMap = {}) {
         } else if (m.daysToExpiry !== undefined && m.daysToExpiry <= 180) {
             badgeClass = "bg-purple-100 text-purple-600";
             statusText = "ใกล้หมดอายุ (180ว.)";
+            
             if (m.daysToExpiry <= 30) {
                 badgeClass = "bg-red-600 text-white";
                 statusText = "วิกฤต/หมดอายุ";
@@ -319,7 +291,6 @@ function renderTable(data, lastWithdrawMap, sixMonthsAgo, withdrawSumMap = {}) {
             <td class="px-6 py-4">
                 <div class="font-bold text-slate-800">${m.name}</div>
                 <div class="text-[10px] text-purple-600 font-black">หมวดหมู่: ${m.category}</div>
-                ${window.currentFilter === 'withdraw' ? `<div class="text-[10px] text-orange-600 font-bold italic">เบิกสะสม 3ด.: ${totalWithdraw.toLocaleString()} ${m.unit}</div>` : ''}
             </td>
             <td class="px-6 py-4 text-center">
                 <div class="text-lg font-black ${m.stock <= 0 ? 'text-red-500' : (m.stock < m.minStock ? 'text-orange-500' : 'text-slate-700')}">
@@ -361,7 +332,7 @@ function renderWithdrawSummary(allInventory) {
         const invItem = allInventory.find(i => i.normName === normalizeName(w.name));
         const currentStock = invItem ? invItem.stock : 0;
         return `
-        <tr onclick="window.goWithdrawFilter()" class="bg-slate-50/50 hover:bg-orange-50 transition-all cursor-pointer">
+        <tr class="bg-slate-50/50 hover:bg-orange-50 transition-all">
             <td class="px-4 py-3 rounded-l-xl font-bold text-slate-700">${w.name}</td>
             <td class="px-4 py-3 text-center"><span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-black">เบิกสะสม: ${w.total.toLocaleString()}</span></td>
             <td class="px-4 py-3 text-center font-black ${currentStock <= 0 ? 'text-red-500' : 'text-slate-700'}">${currentStock.toLocaleString()}</td>
