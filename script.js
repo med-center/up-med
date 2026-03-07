@@ -64,26 +64,54 @@ window.parseDate = (dateVal) => {
 window.toggleMenu = () => {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
-    sidebar?.classList.toggle('active');
-    overlay?.classList.toggle('active');
+    if (sidebar.classList.contains('hidden')) {
+        sidebar.classList.remove('hidden');
+        sidebar.classList.add('fixed', 'inset-y-0', 'left-0', 'w-64');
+        overlay.classList.remove('hidden');
+    } else {
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('fixed', 'inset-y-0', 'left-0', 'w-64');
+        overlay.classList.add('hidden');
+    }
 };
 
 window.changePage = (p) => {
     const pageDb = document.getElementById('page-db');
     const pageIn = document.getElementById('page-in');
+    
+    // Desktop Buttons
     const btnDb = document.getElementById('btn-db');
     const btnIn = document.getElementById('btn-in');
+
+    // Mobile Buttons
+    const btnDbMob = document.getElementById('btn-db-mob');
+    const btnInMob = document.getElementById('btn-in-mob');
     
+    // Switch Pages
     pageDb?.classList.toggle('hidden-page', p !== 'db');
     pageIn?.classList.toggle('hidden-page', p !== 'in');
     
+    // UI Feedback Desktop
     [btnDb, btnIn].forEach(btn => btn?.classList.remove('bg-white/20', 'opacity-100'));
-    const activeBtn = p === 'db' ? btnDb : btnIn;
-    activeBtn?.classList.add('bg-white/20', 'opacity-100');
+    if (p === 'db') btnDb?.classList.add('bg-white/20', 'opacity-100');
+    else btnIn?.classList.add('bg-white/20', 'opacity-100');
+
+    // UI Feedback Mobile
+    if(p === 'db') {
+        btnDbMob?.classList.add('bg-purple-100', 'text-purple-700');
+        btnDbMob?.classList.remove('text-slate-400');
+        btnInMob?.classList.remove('bg-purple-100', 'text-purple-700');
+        btnInMob?.classList.add('text-slate-400');
+    } else {
+        btnInMob?.classList.add('bg-purple-100', 'text-purple-700');
+        btnInMob?.classList.remove('text-slate-400');
+        btnDbMob?.classList.remove('bg-purple-100', 'text-purple-700');
+        btnDbMob?.classList.add('text-slate-400');
+    }
 
     if (window.innerWidth < 1024) {
-        document.getElementById('sidebar')?.classList.remove('active');
-        document.getElementById('overlay')?.classList.remove('active');
+        document.getElementById('sidebar')?.classList.add('hidden');
+        document.getElementById('overlay')?.classList.add('hidden');
     }
     window.render();
 };
@@ -193,7 +221,7 @@ onValue(ref(db, 'meds'), (snap) => {
     window.render();
 });
 
-// --- 5. Updated Render Logic (180 Days Gate) ---
+// --- 5. Render Logic ---
 window.render = () => {
     const q = (document.getElementById('search')?.value || "").toLowerCase();
     
@@ -214,13 +242,9 @@ window.render = () => {
     const stats = allInv.reduce((acc, item) => {
         if (item.stock > 0 && item.stock < item.minStock) acc.near_exp++;
         if (item.stock <= 0) acc.out++;
-        
-        // เกณฑ์แจ้งเตือนยาหมดอายุปรับเป็น 180 วัน
         if (item.daysToExpiry !== undefined && item.daysToExpiry <= 180) acc.expired++;
-        
         const lastDate = lastWithdrawMap[item.normName];
         if (item.stock > 0 && (!lastDate || lastDate < sixMonthsAgo)) acc.dead++;
-        
         return acc;
     }, { near_exp: 0, out: 0, expired: 0, dead: 0 });
 
@@ -229,11 +253,11 @@ window.render = () => {
         if(el) el.innerText = val.toLocaleString(); 
     };
     
-    // อัปเดตตัวเลขหน้า Manage และ Dashboard
+    // อัปเดตตัวเลขทุกจุด (รวม Mobile Header)
     ['stat-total', 'stat-total-db'].forEach(id => update(id, allInv.length));
     ['stat-low', 'stat-low-db'].forEach(id => update(id, stats.near_exp));
-    ['stat-out', 'stat-out-db'].forEach(id => update(id, stats.out));
-    ['stat-exp', 'stat-exp-db'].forEach(id => update(id, stats.expired));
+    ['stat-out', 'stat-out-db', 'stat-out-db-mobile'].forEach(id => update(id, stats.out));
+    ['stat-exp', 'stat-exp-db', 'stat-exp-db-mobile'].forEach(id => update(id, stats.expired));
     ['stat-dead', 'stat-dead-db'].forEach(id => update(id, stats.dead));
 
     let filtered = allInv.filter(m => m.name.toLowerCase().includes(q) || m.lot.toLowerCase().includes(q));
@@ -253,6 +277,7 @@ window.render = () => {
 
     renderTable(filtered, lastWithdrawMap, sixMonthsAgo);
     renderWithdrawSummary(allInv);
+    renderRecentItems(allInv); // ฟังก์ชันเสริมสำหรับแสดงรายการล่าสุด
 };
 
 function renderTable(data, lastWithdrawMap, sixMonthsAgo) {
@@ -273,7 +298,6 @@ function renderTable(data, lastWithdrawMap, sixMonthsAgo) {
         } else if (m.daysToExpiry !== undefined && m.daysToExpiry <= 180) {
             badgeClass = "bg-purple-100 text-purple-600";
             statusText = "ใกล้หมดอายุ (180ว.)";
-            
             if (m.daysToExpiry <= 30) {
                 badgeClass = "bg-red-600 text-white";
                 statusText = "วิกฤต/หมดอายุ";
@@ -296,7 +320,7 @@ function renderTable(data, lastWithdrawMap, sixMonthsAgo) {
                 <div class="text-lg font-black ${m.stock <= 0 ? 'text-red-500' : (m.stock < m.minStock ? 'text-orange-500' : 'text-slate-700')}">
                     ${m.stock.toLocaleString()}
                 </div>
-                <div class="text-[9px] text-slate-400">Min: ${m.minStock.toLocaleString()}</div>
+                <div class="text-[9px] text-slate-400 font-bold uppercase">Min: ${m.minStock.toLocaleString()}</div>
             </td>
             <td class="px-6 py-4 font-bold text-slate-600 text-center">
                 ${m.daysToExpiry !== undefined ? `<span class="${m.daysToExpiry <= 180 ? 'text-red-500' : 'text-slate-600'}">${m.daysToExpiry} วัน</span>` : '-'}
@@ -326,19 +350,41 @@ function renderWithdrawSummary(allInventory) {
         return acc;
     }, {});
     
-    const sorted = Object.values(summary).sort((a, b) => b.total - a.total).slice(0, 8);
+    const sorted = Object.values(summary).sort((a, b) => b.total - a.total).slice(0, 5);
 
     withdrawBody.innerHTML = sorted.map(w => {
         const invItem = allInventory.find(i => i.normName === normalizeName(w.name));
         const currentStock = invItem ? invItem.stock : 0;
         return `
-        <tr class="bg-slate-50/50 hover:bg-orange-50 transition-all">
-            <td class="px-4 py-3 rounded-l-xl font-bold text-slate-700">${w.name}</td>
-            <td class="px-4 py-3 text-center"><span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-black">เบิกสะสม: ${w.total.toLocaleString()}</span></td>
-            <td class="px-4 py-3 text-center font-black ${currentStock <= 0 ? 'text-red-500' : 'text-slate-700'}">${currentStock.toLocaleString()}</td>
-            <td class="px-6 py-4 text-right rounded-r-xl text-[10px] font-bold text-slate-400">${w.unit}</td>
-        </tr>`;
+        <div class="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div>
+                <div class="font-bold text-slate-800 text-sm">${w.name}</div>
+                <div class="text-[10px] text-orange-600 font-black">เบิกสะสม: ${w.total.toLocaleString()} ${w.unit}</div>
+            </div>
+            <div class="text-right">
+                <div class="text-xs text-slate-400 font-bold">คงเหลือ</div>
+                <div class="font-black ${currentStock <= 0 ? 'text-red-500' : 'text-slate-700'}">${currentStock.toLocaleString()}</div>
+            </div>
+        </div>`;
     }).join('');
+}
+
+function renderRecentItems() {
+    const recentBody = document.getElementById('recent-table-body');
+    if (!recentBody) return;
+    
+    const recent = (window.sheetWithdrawals || []).slice(0, 5);
+    recentBody.innerHTML = recent.map(r => `
+        <div class="flex items-center gap-4 p-3 hover:bg-slate-50 rounded-xl transition-all">
+            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center text-xs font-bold shrink-0">
+                ${r.qty}
+            </div>
+            <div class="min-w-0">
+                <div class="text-sm font-bold text-slate-800 truncate">${r.name}</div>
+                <div class="text-[10px] text-slate-400">${r.timestamp}</div>
+            </div>
+        </div>
+    `).join('');
 }
 
 // Start
